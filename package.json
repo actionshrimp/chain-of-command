@@ -1,5 +1,5 @@
 {
-  "name": "command-promises",
+  "name": "chain-of-command",
   "version": "0.0.1",
   "description": "Control flow library for chaining shell commands using promises",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/raoulmillais/command-promises"
+    "url": "git://github.com/raoulmillais/chain-of-command"
   },
   "keywords": [
     "shell",
