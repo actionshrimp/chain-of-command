@@ -2,21 +2,21 @@ var chai = require('chai');
 var expect = chai.expect;
 var sinon = require('sinon');
 var sinonChai = require('sinon-chai');
-var Promise = require('../lib/promise.js');
+var Command = require('../lib/command.js');
 
 chai.use(sinonChai);
 
-describe('Promise', function () {
+describe('Command', function () {
 
 	it('should default success and failure', function () {
-		var promise = new Promise();
+		var promise = new Command();
 
 		expect(promise.successCallback).to.exist;
 		expect(promise.failureCallback).to.exist;
 	});
 
 	it('should add success and failure callbacks', function () {
-		var promise = new Promise();
+		var promise = new Command();
 		var succeed = function succeed(data) {};
 		var fail = function fail(err, data) {};
 
@@ -27,13 +27,13 @@ describe('Promise', function () {
 	});
 
 	it('should throw when no success and failure callbacks are given', function () {
-		var promise = new Promise();
+		var promise = new Command();
 		
 		expect(promise.addCallbacks).to.throw(Error);
 	});
 
 	it('should call success callback when resolving', function () {
-		var promise = new Promise();
+		var promise = new Command();
 		var succeed = sinon.spy();
 		var fail = sinon.spy();
 
@@ -45,7 +45,7 @@ describe('Promise', function () {
 	});
 
 	it('should emit complete event when resolving', function () {
-		var promise = new Promise();
+		var promise = new Command();
 		var succeed = sinon.spy();
 		var fail = sinon.spy();
 		var complete = sinon.spy();
@@ -58,7 +58,7 @@ describe('Promise', function () {
 	});
 
 	it('should emit complete event when rejecting', function () {
-		var promise = new Promise();
+		var promise = new Command();
 		var succeed = sinon.spy();
 		var fail = sinon.spy();
 		var complete = sinon.spy();
@@ -71,7 +71,7 @@ describe('Promise', function () {
 	});
 
 	it('should call failure callback when rejecting', function () {
-		var promise = new Promise();
+		var promise = new Command();
 		var succeed = sinon.spy();
 		var fail = sinon.spy();
 
@@ -83,7 +83,7 @@ describe('Promise', function () {
 	});
 
 	it('should throw when no failure callback and rejecting', function () {
-		var promise = new Promise();
+		var promise = new Command();
 		var succeed = sinon.spy();
 		var error = new Error();
 		var threw = false;

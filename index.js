@@ -1,1 +1,1 @@
-module.exports = require('./lib/commandpromise');
+module.exports = require('./lib/chain');
