@@ -4,15 +4,14 @@ var Chain = require('../lib/chain');
 describe('Chain', function () {
 
 	function fakeExec(command, callback) {
-
 	}
-	
+
 	it('should create a chain with one command', function () {
 		var chain = new Chain(fakeExec, 'echo hello');
 
-		assert.equal(chain.commands.length, 1, 
+		assert.equal(chain.commands.length, 1,
 					'did not add a command to the chain');
-		assert.equal(chain.first.commandText, 'echo hello', 
+		assert.equal(chain.first.commandText, 'echo hello',
 					'did not set first command');
 		assert.equal(chain.dispatcher, fakeExec, 'did not set the dispatcher');
 	});
@@ -27,6 +26,110 @@ describe('Chain', function () {
 		};
 
 		chain.run();
+	});
+
+	describe('and', function () {
+
+		it('should run both commands when the first succeeds', function () {
+			var commands = [];
+			var chain = new Chain(function dispatcher(commandText, cb) {
+				commands.push(commandText);
+				cb();
+			}, 'echo hello');
+
+			chain.and('echo world');
+			chain.run();
+
+			assert.equal(commands.length, 2, 'did not run both commands');
+			assert.equal(commands[0], 'echo hello');
+			assert.equal(commands[1], 'echo world');
+		});
+
+	});
+
+	describe('or', function () {
+
+		it('should run both commands when the first fails', function () {
+			var commands = [];
+			var chain = new Chain(function dispatcher(commandText, cb) {
+				commands.push(commandText);
+				cb(new Error());
+			}, 'echo hello');
+
+			chain.or('echo world');
+			chain.run();
+
+			assert.equal(commands.length, 2, 'did not run both commands');
+			assert.equal(commands[0], 'echo hello');
+			assert.equal(commands[1], 'echo world');
+		});
+
+		it('should only run the first command when the first succeeds', function () {
+			var commands = [];
+			var chain = new Chain(function dispatcher(commandText, cb) {
+				commands.push(commandText);
+				cb();
+			}, 'echo hello');
+
+			chain.or('echo world');
+			chain.run();
+
+			assert.equal(commands.length, 1, 'did not run only first command');
+			assert.equal(commands[0], 'echo hello');
+		});
+
+	});
+
+	describe('then', function () {
+
+		it('should run both commands when the first fails', function () {
+			var commands = [];
+			var chain = new Chain(function dispatcher(commandText, cb) {
+				commands.push(commandText);
+				cb(new Error());
+			}, 'echo hello');
+
+			chain.then('echo world');
+			chain.run();
+
+			assert.equal(commands.length, 2, 'did not run both commands');
+			assert.equal(commands[0], 'echo hello');
+			assert.equal(commands[1], 'echo world');
+		});
+
+		it('should run both commands when the first succeeds', function () {
+			var commands = [];
+			var chain = new Chain(function dispatcher(commandText, cb) {
+				commands.push(commandText);
+				cb();
+			}, 'echo hello');
+
+			chain.then('echo world');
+			chain.run();
+
+			assert.equal(commands.length, 2, 'did not run only first command');
+			assert.equal(commands[0], 'echo hello');
+			assert.equal(commands[1], 'echo world');
+		});
+
+	});
+
+	describe('reset', function () {
+
+		it('should set finished to false on all commands', function () {
+			var chain = new Chain(fakeExec, 'echo hello');
+			chain.and('echo world').and('echo');
+			chain.commands.forEach(function (command) {
+				command.finished = true;
+			});
+
+			chain.reset();
+
+			chain.commands.forEach(function (command) {
+				assert.ok(!command.finished,
+						command.commandText + ' was finished');
+			});
+		});
 	});
 
 });
