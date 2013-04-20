@@ -7,7 +7,7 @@ describe('Chain', function () {
 	}
 
 	it('should create a chain with one command', function () {
-		var chain = new Chain(fakeExec, 'echo hello');
+		var chain = new Chain('echo hello', fakeExec);
 
 		assert.equal(chain.commands.length, 1,
 					'did not add a command to the chain');
@@ -17,7 +17,7 @@ describe('Chain', function () {
 	});
 
 	it('should dispatch the first command', function (done) {
-		var chain = new Chain(fakeExec, 'echo hello');
+		var chain = new Chain('echo hello', fakeExec);
 		chain.first = {
 			dispatch: function (dispatcher) {
 				assert.equal(dispatcher, fakeExec);
@@ -32,10 +32,10 @@ describe('Chain', function () {
 
 		it('should run both commands when the first succeeds', function () {
 			var commands = [];
-			var chain = new Chain(function dispatcher(commandText, cb) {
+			var chain = new Chain('echo hello', function dispatcher(commandText, cb) {
 				commands.push(commandText);
 				cb();
-			}, 'echo hello');
+			});
 
 			chain.and('echo world');
 			chain.run();
@@ -51,10 +51,10 @@ describe('Chain', function () {
 
 		it('should run both commands when the first fails', function () {
 			var commands = [];
-			var chain = new Chain(function dispatcher(commandText, cb) {
+			var chain = new Chain('echo hello', function dispatcher(commandText, cb) {
 				commands.push(commandText);
 				cb(new Error());
-			}, 'echo hello');
+			});
 
 			chain.or('echo world');
 			chain.run();
@@ -66,10 +66,10 @@ describe('Chain', function () {
 
 		it('should only run the first command when the first succeeds', function () {
 			var commands = [];
-			var chain = new Chain(function dispatcher(commandText, cb) {
+			var chain = new Chain('echo hello', function dispatcher(commandText, cb) {
 				commands.push(commandText);
 				cb();
-			}, 'echo hello');
+			});
 
 			chain.or('echo world');
 			chain.run();
@@ -84,10 +84,10 @@ describe('Chain', function () {
 
 		it('should run both commands when the first fails', function () {
 			var commands = [];
-			var chain = new Chain(function dispatcher(commandText, cb) {
+			var chain = new Chain('echo hello', function dispatcher(commandText, cb) {
 				commands.push(commandText);
 				cb(new Error());
-			}, 'echo hello');
+			});
 
 			chain.then('echo world');
 			chain.run();
@@ -99,10 +99,10 @@ describe('Chain', function () {
 
 		it('should run both commands when the first succeeds', function () {
 			var commands = [];
-			var chain = new Chain(function dispatcher(commandText, cb) {
+			var chain = new Chain('echo hello', function dispatcher(commandText, cb) {
 				commands.push(commandText);
 				cb();
-			}, 'echo hello');
+			});
 
 			chain.then('echo world');
 			chain.run();
@@ -117,7 +117,7 @@ describe('Chain', function () {
 	describe('reset', function () {
 
 		it('should set finished to false on all commands', function () {
-			var chain = new Chain(fakeExec, 'echo hello');
+			var chain = new Chain('echo hello', fakeExec);
 			chain.and('echo world').and('echo');
 			chain.commands.forEach(function (command) {
 				command.finished = true;
