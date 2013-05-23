@@ -17,6 +17,46 @@ describe('Command', function () {
 		assert.ok(command.failureCallback);
 	});
 
+	describe('promised function', function () {
+
+		it('should resolve the command when the callback succeeds', function (done) {
+			var command = new Command(function fakeAsync(cb) {
+				process.nextTick(function () {
+					cb(null, 'yay');
+				});
+			});
+			var fail = function fakeErrCb(err) {
+				done(err);
+			}
+			var complete = function fakeSuccessCb(output) {
+				assert.equal(output, 'yay');
+				done();
+			}
+
+			command.addCallbacks(complete, fail);
+			command.dispatch();
+		});
+
+		it('should reject the command when the callback fails', function (done) {
+			var command = new Command(function fakeAsync(cb) {
+				process.nextTick(function () {
+					cb(new Error('Oh noes!'));
+				});
+			});
+			var fail = function fakeErrCb(err) {
+				assert.equal(err.message, 'Oh noes!');
+				done();
+			}
+			var complete = function fakeSuccessCb(output) {
+				done(output);
+			}
+
+			command.addCallbacks(complete, fail);
+			command.dispatch();
+		});
+
+	});
+
 	describe('addCallbacks', function () {
 
 		it('should add success and failure callbacks', function () {
