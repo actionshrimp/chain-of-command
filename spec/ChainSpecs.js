@@ -45,6 +45,21 @@ describe('Chain', function () {
 			assert.equal(commands[1], 'echo world');
 		});
 
+		it('should proxy dispatching event', function (done) {
+			var commands = [];
+			var chain = new Chain('echo hello', function dispatcher(commandText, cb) {
+				commands.push(commandText);
+				cb();
+			});
+
+			chain.and('echo world');
+			chain.on('command dispatching', function (commandText) {
+				assert.equal(commandText, 'echo world');
+				done();
+			});
+			chain.commands[1].emit('dispatching', 'foo');
+		});
+
 	});
 
 	describe('or', function () {
