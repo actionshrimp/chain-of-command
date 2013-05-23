@@ -1,13 +1,22 @@
-var chai = require('chai');
-var expect = chai.expect;
 var sinon = require('sinon');
 var assert = require('assert');
 var sinonChai = require('sinon-chai');
 var Command = require('../lib/command.js');
 
-chai.use(sinonChai);
-
 describe('Command', function () {
+
+	var succeed = function fakeSucceed() {
+		succeed.calls++;
+	};
+	var fail = function fakeFailed() {
+		fail.calls++;
+	};
+	var noop = function noop() {};
+
+	beforeEach(function () {
+		succeed.calls = 0;
+		fail.calls = 0;
+	});
 
 	it('should setup the properties', function () {
 		var command = new Command('echo hello');
@@ -27,11 +36,11 @@ describe('Command', function () {
 			});
 			var fail = function fakeErrCb(err) {
 				done(err);
-			}
+			};
 			var complete = function fakeSuccessCb(output) {
 				assert.equal(output, 'yay');
 				done();
-			}
+			};
 
 			command.addCallbacks(complete, fail);
 			command.dispatch();
@@ -46,10 +55,10 @@ describe('Command', function () {
 			var fail = function fakeErrCb(err) {
 				assert.equal(err.message, 'Oh noes!');
 				done();
-			}
+			};
 			var complete = function fakeSuccessCb(output) {
 				done(output);
-			}
+			};
 
 			command.addCallbacks(complete, fail);
 			command.dispatch();
@@ -61,77 +70,78 @@ describe('Command', function () {
 
 		it('should add success and failure callbacks', function () {
 			var command = new Command('echo hello');
-			var succeed = function succeed(data) {};
-			var fail = function fail(err, data) {};
+			var succeed = noop;
+			var fail = noop;
 
 			command.addCallbacks(succeed, fail);
 
-			expect(command.successCallback).to.equal(succeed);
-			expect(command.failureCallback).to.equal(fail);
+			assert.strictEqual(command.successCallback, succeed);
+			assert.strictEqual(command.failureCallback, fail);
 		});
 
 		it('should throw when no success and failure callbacks are given', function () {
 			var command = new Command('echo hello');
 
-			expect(command.addCallbacks).to.throw(Error);
+			try{
+				command.addCallbacks(undefined, undefined);
+			} catch (err){
+				return assert.ok(err);
+			}
+			assert.fail("Should have thrown an error");
 		});
 
 		it('should call success callback when resolving', function () {
 			var command = new Command('echo hello');
-			var succeed = sinon.spy();
-			var fail = sinon.spy();
 
 			command.addCallbacks(succeed, fail);
 			command.resolve('YAY!');
 
-			expect(command.successCallback).to.have.been.called;
-			expect(command.failureCallback).not.to.have.been.called;
+			assert.equal(succeed.calls, 1);
+			assert.equal(fail.calls, 0);
 		});
 
 	});
+
 	it('should emit complete event when resolving', function () {
 		var command = new Command('echo hello');
-		var succeed = sinon.spy();
 		var fail = sinon.spy();
-		var complete = sinon.spy();
 
-		command.addCallbacks(succeed, fail);
-		command.on('complete', complete);
+		command.addCallbacks(succeed, noop);
+		command.on('complete', succeed);
 		command.resolve('YAY!');
-
-		expect(complete).to.have.been.called;
+		assert.equal(succeed.calls, 2, 'succeed should have been called twice');
 	});
 
 	it('should emit complete event when rejecting', function () {
 		var command = new Command('echo hello');
 		var succeed = sinon.spy();
 		var fail = sinon.spy();
-		var complete = sinon.spy();
+		var complete = function fakeComplete() {
+			complete.calls++;
+		};
+		complete.calls = 0;
 
 		command.addCallbacks(succeed, fail);
 		command.on('complete', complete);
 		command.reject('YAY!');
 
-		expect(complete).to.have.been.called;
+		assert.equal(complete.calls, 1);
 	});
 
 	describe('reject', function () {
 
 		it('should call failure callback when rejecting', function () {
 			var command = new Command('echo hello');
-			var succeed = sinon.spy();
-			var fail = sinon.spy();
 
 			command.addCallbacks(succeed, fail);
 			command.reject(new Error());
 
-			expect(command.successCallback).not.to.have.been.called;
-			expect(command.failureCallback).to.have.been.called;
+			assert.equal(succeed.calls, 0);
+			assert.equal(fail.calls, 1);
 		});
 
 		it('should throw when no failure callback and rejecting', function () {
 			var command = new Command('echo hello');
-			var succeed = sinon.spy();
 			var error = new Error();
 			var threw = false;
 
@@ -140,11 +150,11 @@ describe('Command', function () {
 				command.reject(error);
 			} catch (err) {
 				threw = true;
-				expect(err).to.eql(error);
+				assert.strictEqual(err, error);
 			}
 
-			expect(threw).to.equal(true);
-			expect(command.successCallback).not.to.have.been.called;
+			assert.ok(threw);
+			assert.equal(succeed.calls, 0);
 		});
 
 	});
