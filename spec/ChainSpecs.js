@@ -129,6 +129,22 @@ describe('Chain', function () {
 
 	});
 
+	describe('ok', function () {
+
+		it('should call the success callback when the previous command fails', function (done) {
+			var chain = new Chain('echo hello', function failExec(command, cb) {
+				process.nextTick(function () {
+					cb(new Error('Not of interest'));
+				});
+			}).ok();
+
+			chain.andFinally(function allDone(err, data) {
+				assert.ok(!err);
+				done();
+			});
+		});
+	});
+
 	describe('reset', function () {
 
 		it('should set finished to false on all commands', function () {
