@@ -95,7 +95,7 @@ describe('Chain', function () {
 
 	});
 
-	describe('then', function () {
+	describe('always', function () {
 
 		it('should run both commands when the first fails', function () {
 			var commands = [];
@@ -104,7 +104,7 @@ describe('Chain', function () {
 				cb(new Error());
 			});
 
-			chain.then('echo world');
+			chain.always('echo world');
 			chain.run();
 
 			assert.equal(commands.length, 2, 'did not run both commands');
@@ -119,7 +119,7 @@ describe('Chain', function () {
 				cb();
 			});
 
-			chain.then('echo world');
+			chain.always('echo world');
 			chain.run();
 
 			assert.equal(commands.length, 2, 'did not run only first command');
