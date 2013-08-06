@@ -60,6 +60,42 @@ describe('Chain', function () {
 			chain.commands[1].emit('dispatching', 'foo');
 		});
 
+		it('should emit error event if first command fails', function () {
+			var commands = [];
+			var chain = new Chain('echo hello', function dispatcher(commandText, cb) {
+				commands.push(commandText);
+				cb('first command failed!');
+			});
+
+			chain.and('echo world');
+
+			var callbackCalled = false;
+			chain.on('error', function () {
+				callbackCalled = true;
+			});
+
+			chain.run();
+			assert.ok(callbackCalled);
+		});
+
+		it('should throw error if first command fails and no error event listener', function () {
+			var commands = [];
+			var chain = new Chain('echo hello', function dispatcher(commandText, cb) {
+				commands.push(commandText);
+				cb('first command failed!');
+			});
+
+			chain.and('echo world');
+
+			var caught = false;
+			try {
+				chain.run();
+			} catch (err) {
+				caught = true;
+			}
+
+			assert.ok(caught);
+		});
 	});
 
 	describe('or', function () {

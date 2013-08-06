@@ -162,7 +162,6 @@ describe('Command', function () {
 			try {
 				command.reject(error);
 			} catch (err) {
-                console.log(err.stack);
 				threw = true;
 				assert.strictEqual(err, error);
 			}
