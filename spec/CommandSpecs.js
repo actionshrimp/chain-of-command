@@ -140,21 +140,18 @@ describe('Command', function () {
 			assert.equal(fail.calls, 1);
 		});
 
-		it('should throw when no failure callback and rejecting', function () {
+		it('should emit error event when no failure callback and rejecting', function () {
 			var command = new Command('echo hello');
 			var error = new Error();
 			var threw = false;
+			var errorListener = sinon.spy();
 
 			command.addCallbacks(succeed);
-			try {
-				command.reject(error);
-			} catch (err) {
-				threw = true;
-				assert.strictEqual(err, error);
-			}
+			command.on('error', errorListener);
+			command.reject(error);
 
-			assert.ok(threw);
-			assert.equal(succeed.calls, 0);
+			assert(errorListener.calledOnce);
+			assert(errorListener.calledWith(error));
 		});
 
 	});
