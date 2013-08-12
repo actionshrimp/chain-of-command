@@ -60,6 +60,22 @@ describe('Chain', function () {
 			chain.commands[1].emit('dispatching', 'foo');
 		});
 
+		it('should proxy error event', function (done) {
+			var commands = [];
+			var chain = new Chain('echo hello', function dispatcher(commandText, cb) {
+				commands.push(commandText);
+				cb();
+			});
+
+			chain.and('echo world');
+			chain.on('error', function (cmd, err) {
+				assert.equal(cmd.commandText, 'echo world');
+				assert.equal(err, 'Error unhandled by chain: error!');
+				done();
+			});
+			chain.commands[1].emit('error', 'error!');
+		});
+
 		it('should emit error event if first command fails', function () {
 			var commands = [];
 			var chain = new Chain('echo hello', function dispatcher(commandText, cb) {

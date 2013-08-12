@@ -201,6 +201,22 @@ describe('Command', function () {
 				callback(err);
 			});
 		});
-	});
 
+		it('should emit an error if the callback is called multiple times', function (done) {
+			var command = new Command('echo hello');
+			var err = new Error('Oh noes');
+			command.addCallbacks(function () {}, function () {});
+
+			command.on('error', function (err) {
+				assert.equal(err, 'Multiple results received by command. Command: echo hello, Err: Error: Oh noes, Output: undefined');
+				done();
+			});
+
+			command.dispatch(function fakeDispatcher(commandText, callback) {
+				assert.equal(command.commandText, commandText);
+				callback(err);
+				callback(err);
+			});
+		});
+	});
 });
